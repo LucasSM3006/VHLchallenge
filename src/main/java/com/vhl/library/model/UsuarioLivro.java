@@ -7,11 +7,11 @@ import jakarta.persistence.*;
 public class UsuarioLivro {
     @Id
     @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "USUARIO_ID")
     private Usuario usuario;
 
     @Id
     @ManyToOne
-    @JoinColumn(name = "livro_id")
+    @JoinColumn(name = "LIVRO_ID")
     private Livro livro;
 }

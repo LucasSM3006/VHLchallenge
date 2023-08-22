@@ -10,9 +10,12 @@ import java.util.List;
 public class Livro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
+    @Column(name = "TITULO")
     private String titulo;
+    @Column(name = "AUTOR")
     private String autor;
 
     @OneToMany(mappedBy = "livro")
