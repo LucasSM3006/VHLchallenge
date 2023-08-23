@@ -2,12 +2,13 @@ package com.vhl.library.controller;
 
 import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.model.DTO.UsuarioDTO;
+import com.vhl.library.model.Usuario;
 import com.vhl.library.services.LivroService;
 import com.vhl.library.services.UsuarioService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuario")
@@ -35,5 +36,10 @@ public class UsuarioController {
     public String excluir() {
         // return usuarioService.excluir(id);
         return "";
+    }
+
+    @GetMapping("/listar")
+    public ResponseEntity<List<Usuario>> listar(@RequestBody UsuarioDTO usuarioDTO) {
+        return usuarioService.listar(usuarioDTO);
     }
 }
