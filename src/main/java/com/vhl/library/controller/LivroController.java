@@ -2,10 +2,9 @@ package com.vhl.library.controller;
 
 import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.services.LivroService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/livro")
@@ -17,22 +16,19 @@ public class LivroController {
         this.livroService = livroService;
     }
 
-    @GetMapping("/adicionar")
-    public String adicionar(@RequestBody LivroDTO livroDTO) {
-        // return livroService.adicionar(livroDTO);
-        return "tudo ok";
+    @PostMapping("/adicionar")
+    public ResponseEntity<String> adicionar(@RequestBody LivroDTO livroDTO) {
+        return livroService.adicionar(livroDTO);
     }
 
-    @GetMapping("/editar")
-    public String editar() {
-        // livroService.editar();
-        return "";
+    @PutMapping("/editar/{id}")
+    public ResponseEntity<String> editar(@PathVariable("id") int id, @RequestBody LivroDTO livroDTO) {
+        return livroService.editar(id, livroDTO);
     }
 
-    @GetMapping("/excluir")
-    public String excluir() {
-        // livroService.excluir(id);
-        return "";
+    @DeleteMapping("/excluir/{id}")
+    public ResponseEntity<String> excluir(@PathVariable("id") int id) {
+        return livroService.excluir(id);
     }
 
     @GetMapping("/emprestar")
