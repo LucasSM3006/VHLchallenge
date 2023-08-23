@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuario_livro")
+@IdClass(UsuarioLivroId.class)
 public class UsuarioLivro {
     @Id
     @ManyToOne
