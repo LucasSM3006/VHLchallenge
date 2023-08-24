@@ -38,8 +38,8 @@ public class UsuarioController {
         return "";
     }
 
-    @GetMapping("/listar")
-    public ResponseEntity<List<Usuario>> listar(@RequestBody UsuarioDTO usuarioDTO) {
-        return usuarioService.listar(usuarioDTO);
+    @GetMapping("/pesquisarPorNome")
+    public ResponseEntity<List<UsuarioDTO>> pesquisarPorNome(@RequestBody UsuarioDTO usuarioDTO) {
+        return usuarioService.pesquisarPorNome(usuarioDTO);
     }
 }
