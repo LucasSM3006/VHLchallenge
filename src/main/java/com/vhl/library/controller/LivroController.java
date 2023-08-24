@@ -2,9 +2,10 @@ package com.vhl.library.controller;
 
 import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.services.LivroService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/livro")
@@ -42,12 +43,17 @@ public class LivroController {
     }
 
     @GetMapping("/pesquisarPorTitulo")
-    public String pesquisarPorTitulo() {
-        return "";
+    public ResponseEntity<List<LivroDTO>> pesquisarPorTitulo(@RequestBody LivroDTO livroDTO) {
+        return livroService.pesquisarPorTitulo(livroDTO);
     }
 
     @GetMapping("/pesquisarPorAutor")
-    public String pesquisarPorAutor() {
-        return "";
+    public ResponseEntity<List<LivroDTO>> pesquisarPorAutor(@RequestBody LivroDTO livroDTO) {
+        return livroService.pesquisarPorAutor(livroDTO);
+    }
+
+    @GetMapping("/pesquisarPorAutorETitulo")
+    public ResponseEntity<List<LivroDTO>> pesquisarPorAutorETitulo(@RequestBody LivroDTO livroDTO) {
+        return livroService.pesquisarPorTituloEAutor(livroDTO);
     }
 }
