@@ -21,9 +21,23 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public ResponseEntity<Usuario> adicionar(UsuarioDTO usuarioDTO) {
-//        return new ResponseEntity<>(usuarioDTO, HttpStatus.OK);
-    return null;
+    public ResponseEntity<String> adicionar(UsuarioDTO usuarioDTO) {
+        String mensagem = "";
+        String nome = usuarioDTO.getNome().trim();
+
+        if (nome.isBlank() || !nome.matches("[a-zA-Z_ ]+")) {
+            mensagem = "Favor utilizar somente letras.";
+        } else {
+            Usuario novoUsuario = new Usuario();
+
+            novoUsuario.setNome(usuarioDTO.getNome());
+
+            usuarioRepository.save(novoUsuario);
+
+            mensagem = "Usuário salvo.";
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     public String editar() {
