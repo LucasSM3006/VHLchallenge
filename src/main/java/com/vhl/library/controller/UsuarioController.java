@@ -20,10 +20,9 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @GetMapping("/adicionar")
-    public String adicionar(@RequestBody UsuarioDTO usuarioDTO) {
-        // return usuarioService.adicionar(usuarioDTO);
-        return "tudo ok";
+    @PostMapping("/adicionar")
+    public ResponseEntity<String> adicionar(@RequestBody UsuarioDTO usuarioDTO) {
+        return usuarioService.adicionar(usuarioDTO);
     }
 
     @GetMapping("/editar")
