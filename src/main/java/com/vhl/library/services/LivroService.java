@@ -19,7 +19,21 @@ public class LivroService {
     }
 
     public ResponseEntity<String> adicionar(LivroDTO livroDTO) {
-        return new ResponseEntity<>(livroDTO.getTitulo(), HttpStatus.OK);
+        String mensagem = "";
+
+        if(!livroDTO.getTitulo().isBlank() && !livroDTO.getAutor().isBlank()) {
+            Livro novoLivro = new Livro();
+
+            novoLivro.setAutor(livroDTO.getAutor());
+            novoLivro.setTitulo(livroDTO.getTitulo());
+
+            livroRepository.save(novoLivro);
+            mensagem = "Livro salvo.";
+        } else {
+            mensagem = "Informações faltando. Autor e Titulo são obrigatórios.";
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     public ResponseEntity<String> editar(int id, LivroDTO livroDTO) {
