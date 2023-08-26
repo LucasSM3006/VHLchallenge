@@ -21,7 +21,7 @@ public class LivroService {
     }
 
     public ResponseEntity<String> adicionar(LivroDTO livroDTO) {
-        String mensagem = "";
+        String mensagem;
 
         livroDTO.setAutor(livroDTO.getAutor() == null ? " " : livroDTO.getAutor());
         livroDTO.setTitulo(livroDTO.getTitulo() == null ? " " : livroDTO.getTitulo());
@@ -44,7 +44,7 @@ public class LivroService {
     }
 
     public ResponseEntity<String> editar(int id, LivroDTO livroDTO) {
-        String mensagem = "";
+        String mensagem;
 
         Optional<Livro> livro = livroRepository.findByIdAndExcluidoFalse(id);
 
