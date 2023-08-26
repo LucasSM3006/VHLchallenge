@@ -1,8 +1,6 @@
 package com.vhl.library.services;
 
-import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.model.DTO.UsuarioDTO;
-import com.vhl.library.model.Livro;
 import com.vhl.library.model.Usuario;
 import com.vhl.library.repos.UsuarioRepository;
 import org.springframework.http.HttpStatus;
@@ -11,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -22,7 +21,10 @@ public class UsuarioService {
     }
 
     public ResponseEntity<String> adicionar(UsuarioDTO usuarioDTO) {
-        String mensagem = "";
+        String mensagem;
+
+        usuarioDTO.setNome(usuarioDTO.getNome() == null ? " " : usuarioDTO.getNome());
+
         String nome = usuarioDTO.getNome().trim();
 
         if (nome.isBlank() || !nome.matches("[a-zA-Z_ ]+")) {
@@ -31,6 +33,7 @@ public class UsuarioService {
             Usuario novoUsuario = new Usuario();
 
             novoUsuario.setNome(usuarioDTO.getNome());
+            novoUsuario.setExcluido(false);
 
             usuarioRepository.save(novoUsuario);
 
@@ -40,8 +43,34 @@ public class UsuarioService {
         return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
-    public String editar() {
-        return null;
+    public ResponseEntity<String> editar(int id, UsuarioDTO usuarioDTO) {
+        String mensagem;
+
+        usuarioDTO.setNome(usuarioDTO.getNome() == null ? " " : usuarioDTO.getNome());
+
+        String nome = usuarioDTO.getNome().trim();
+
+        if (nome.isBlank() || !nome.matches("[a-zA-Z_ ]+")) {
+            mensagem = "Favor utilizar somente letras.";
+            return new ResponseEntity<>(mensagem, HttpStatus.OK);
+        }
+
+        Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(id);
+
+        if(usuario.isPresent()) {
+            Usuario usuarioExistente = usuario.get();
+            String nomeAnterior = usuarioExistente.getNome();
+
+            usuarioExistente.setNome(usuarioDTO.getNome());
+
+            usuarioRepository.save(usuarioExistente);
+
+            mensagem = "Usuário editado. Nome anterior: " + nomeAnterior + "; Novo nome: " + usuarioExistente.getNome();
+        } else {
+            mensagem = "Usuário não existente ou excluído.";
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     public String excluir() {
@@ -49,7 +78,7 @@ public class UsuarioService {
     }
 
     public ResponseEntity<List<UsuarioDTO>> pesquisarPorNome(UsuarioDTO usuarioDTO) {
-        List<Usuario> usuarios = usuarioRepository.findByNomeContainingIgnoreCase(usuarioDTO.getNome());
+        List<Usuario> usuarios = usuarioRepository.findByNomeContainingIgnoreCaseAndExcluidoIsFalse(usuarioDTO.getNome());
         List<UsuarioDTO> usuariosDTO = convertToDTO(usuarios);
 
         if(usuarios.isEmpty()) {
