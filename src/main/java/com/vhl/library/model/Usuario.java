@@ -13,6 +13,8 @@ public class Usuario {
     @Column(name = "NOME")
     private String nome;
 
+    private boolean excluido;
+
     public Long getId() {
         return id;
     }
@@ -27,5 +29,13 @@ public class Usuario {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public boolean isExcluido() {
+        return excluido;
+    }
+
+    public void setExcluido(boolean excluido) {
+        this.excluido = excluido;
     }
 }
