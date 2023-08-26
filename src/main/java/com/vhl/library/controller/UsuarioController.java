@@ -1,9 +1,6 @@
 package com.vhl.library.controller;
 
-import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.model.DTO.UsuarioDTO;
-import com.vhl.library.model.Usuario;
-import com.vhl.library.services.LivroService;
 import com.vhl.library.services.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +22,10 @@ public class UsuarioController {
         return usuarioService.adicionar(usuarioDTO);
     }
 
-    @GetMapping("/editar")
-    public String editar() {
-        // return usuarioService.editar();
-        return "";
+    @PutMapping("/editar/{id}")
+    public ResponseEntity<String> editar(@PathVariable("id") int id, @RequestBody UsuarioDTO usuarioDTO) {
+
+        return usuarioService.editar(id, usuarioDTO);
     }
 
     @GetMapping("/excluir")
