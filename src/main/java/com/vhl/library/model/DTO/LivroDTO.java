@@ -4,6 +4,8 @@ public class LivroDTO {
     private Long id;
     private String titulo;
     private String autor;
+    private boolean excluido;
+    private boolean emprestado;
 
     public String getTitulo() {
         return titulo;
@@ -27,5 +29,21 @@ public class LivroDTO {
 
     public Long getId() {
         return this.id;
+    }
+
+    public boolean isExcluido() {
+        return excluido;
+    }
+
+    public void setExcluido(boolean excluido) {
+        this.excluido = excluido;
+    }
+
+    public boolean isEmprestado() {
+        return emprestado;
+    }
+
+    public void setEmprestado(boolean emprestado) {
+        this.emprestado = emprestado;
     }
 }
