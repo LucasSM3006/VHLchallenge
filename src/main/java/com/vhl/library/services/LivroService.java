@@ -41,7 +41,6 @@ public class LivroService {
             novoLivro.setAutor(livroDTO.getAutor());
             novoLivro.setTitulo(livroDTO.getTitulo());
             novoLivro.setExcluido(false);
-            novoLivro.setEmprestado(false);
 
             livroRepository.save(novoLivro);
             mensagem = "Livro salvo.";
@@ -119,7 +118,7 @@ public class LivroService {
         if(usuarioLivroDTO.getLivro_id() <= 0 || usuarioLivroDTO.getUsuario_id() <= 0) {
             mensagem = "É necessário o ID do livro e o ID do usuário. Zero é inválido.";
         } else {
-            List<UsuarioLivro> registroExistente = usuarioLivroRepository.findActiveUsuarioLivrosByUsuarioIdAndLivroId(usuarioLivroDTO.getUsuario_id(), usuarioLivroDTO.getLivro_id());
+            Optional<UsuarioLivro> registroExistente = usuarioLivroRepository.findActiveUsuarioLivrosByUsuarioIdAndLivroId(usuarioLivroDTO.getUsuario_id(), usuarioLivroDTO.getLivro_id());
 
             if(registroExistente.isEmpty()) {
                 Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(usuarioLivroDTO.getUsuario_id());
@@ -130,20 +129,47 @@ public class LivroService {
                     if(alugueis.size() >= 2) {
                         mensagem = "Máximo de dois livros por usuário. Devolva antes de pegar mais.";
                     } else {
-                        UsuarioLivro registroEmprestimo = new UsuarioLivro();
+                        if(isEmprestado(livro.get().getId().intValue())) {
+                            mensagem = "Livro já emprestado.";
+                        } else {
+                            UsuarioLivro registroEmprestimo = new UsuarioLivro();
 
-                        registroEmprestimo.setUsuario(usuario.get());
-                        registroEmprestimo.setLivro(livro.get());
-                        registroEmprestimo.setAtivo(true);
+                            registroEmprestimo.setUsuario(usuario.get());
+                            registroEmprestimo.setLivro(livro.get());
+                            registroEmprestimo.setAtivo(true);
 
-                        usuarioLivroRepository.save(registroEmprestimo);
-                        mensagem = "Livro emprestado.";
+                            usuarioLivroRepository.save(registroEmprestimo);
+                            mensagem = "Livro emprestado com sucesso.";
+                        }
                     }
                 } else {
                     mensagem = "Usuário ou Livro não existente.";
                 }
             } else {
                 mensagem = "Livro já alugado pelo usuário.";
+            }
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> devolver(UsuarioLivroDTO usuarioLivroDTO) {
+        String mensagem;
+
+        if(usuarioLivroDTO.getLivro_id() <= 0 || usuarioLivroDTO.getUsuario_id() <= 0) {
+            mensagem = "É necessário o ID do livro e o ID do usuário. Zero é inválido.";
+        } else {
+            Optional<UsuarioLivro> registroExistente = usuarioLivroRepository.findActiveUsuarioLivrosByUsuarioIdAndLivroId(usuarioLivroDTO.getUsuario_id(), usuarioLivroDTO.getLivro_id());
+
+            if(registroExistente.isEmpty()) {
+                mensagem = "Empréstimo não existente.";
+            } else {
+                UsuarioLivro emprestimo = registroExistente.get();
+
+                emprestimo.setAtivo(false);
+                usuarioLivroRepository.save(emprestimo);
+
+                mensagem = "Livro devolvido.";
             }
         }
 
@@ -172,11 +198,17 @@ public class LivroService {
             livroPesquisaDTO.setId(livro.getId());
             livroPesquisaDTO.setAutor(livro.getAutor());
             livroPesquisaDTO.setTitulo(livro.getTitulo());
-            livroPesquisaDTO.setEmprestado(livro.isEmprestado() ? "Sim" : "Não");
+            livroPesquisaDTO.setEmprestado(isEmprestado(livro.getId().intValue()) ? "Sim" : "Não");
 
             livrosPesquisaDTO.add(livroPesquisaDTO);
         }
 
         return livrosPesquisaDTO;
+    }
+
+    private boolean isEmprestado(int id) {
+        Optional<UsuarioLivro> livro = usuarioLivroRepository.findByAtivoTrueAndLivroId(id);
+
+        return (livro.isPresent());
     }
 }
