@@ -19,7 +19,6 @@ public class Livro {
     private String autor;
 
     private boolean excluido;
-    private boolean emprestado;
 
     @OneToMany(mappedBy = "livro")
     private List<UsuarioLivro> usuarioLivro = new ArrayList<>();
@@ -54,14 +53,6 @@ public class Livro {
 
     public void setExcluido(boolean excluido) {
         this.excluido = excluido;
-    }
-
-    public boolean isEmprestado() {
-        return emprestado;
-    }
-
-    public void setEmprestado(boolean emprestado) {
-        this.emprestado = emprestado;
     }
 
     public List<UsuarioLivro> getUsuarioLivro() {
