@@ -2,8 +2,13 @@ package com.vhl.library.services;
 
 import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.model.DTO.LivroPesquisaDTO;
+import com.vhl.library.model.DTO.UsuarioLivroDTO;
 import com.vhl.library.model.Livro;
+import com.vhl.library.model.Usuario;
+import com.vhl.library.model.UsuarioLivro;
 import com.vhl.library.repos.LivroRepository;
+import com.vhl.library.repos.UsuarioLivroRepository;
+import com.vhl.library.repos.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,9 +20,13 @@ import java.util.Optional;
 @Service
 public class LivroService {
     private final LivroRepository livroRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioLivroRepository usuarioLivroRepository;
 
-    public LivroService(LivroRepository livroRepository) {
+    public LivroService(LivroRepository livroRepository, UsuarioRepository usuarioRepository, UsuarioLivroRepository usuarioLivroRepository) {
         this.livroRepository = livroRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioLivroRepository = usuarioLivroRepository;
     }
 
     public ResponseEntity<String> adicionar(LivroDTO livroDTO) {
@@ -41,6 +50,30 @@ public class LivroService {
         }
 
         return new ResponseEntity<>(mensagem, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorAutor(LivroDTO livroDTO) {
+        List<Livro> livros = livroRepository.findByAutorContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getAutor());
+        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
+        isEmpty(livrosDTO);
+
+        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorTitulo(LivroDTO livroDTO) {
+        List<Livro> livros = livroRepository.findByTituloContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getTitulo());
+        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
+        isEmpty(livrosDTO);
+
+        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorTituloEAutor(LivroDTO livroDTO) {
+        List<Livro> livros = livroRepository.findByAutorContainingIgnoreCaseAndTituloContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getAutor(), livroDTO.getTitulo());
+        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
+        isEmpty(livrosDTO);
+
+        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
     }
 
     public ResponseEntity<String> editar(int id, LivroDTO livroDTO) {
@@ -80,28 +113,41 @@ public class LivroService {
         return new ResponseEntity<>("Ok.", HttpStatus.OK);
     }
 
-    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorAutor(LivroDTO livroDTO) {
-        List<Livro> livros = livroRepository.findByAutorContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getAutor());
-        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
-        isEmpty(livrosDTO);
+    public ResponseEntity<String> emprestar(UsuarioLivroDTO usuarioLivroDTO) {
+        String mensagem;
 
-        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
-    }
+        if(usuarioLivroDTO.getLivro_id() <= 0 || usuarioLivroDTO.getUsuario_id() <= 0) {
+            mensagem = "É necessário o ID do livro e o ID do usuário. Zero é inválido.";
+        } else {
+            List<UsuarioLivro> registroExistente = usuarioLivroRepository.findActiveUsuarioLivrosByUsuarioIdAndLivroId(usuarioLivroDTO.getUsuario_id(), usuarioLivroDTO.getLivro_id());
 
-    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorTitulo(LivroDTO livroDTO) {
-        List<Livro> livros = livroRepository.findByTituloContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getTitulo());
-        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
-        isEmpty(livrosDTO);
+            if(registroExistente.isEmpty()) {
+                Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(usuarioLivroDTO.getUsuario_id());
+                Optional<Livro> livro = livroRepository.findByIdAndExcluidoFalse(usuarioLivroDTO.getLivro_id());
 
-        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
-    }
+                if (usuario.isPresent() && livro.isPresent()) {
+                    List<UsuarioLivro> alugueis = usuarioLivroRepository.findByAtivoTrueAndUsuarioId(usuarioLivroDTO.getUsuario_id());
+                    if(alugueis.size() >= 2) {
+                        mensagem = "Máximo de dois livros por usuário. Devolva antes de pegar mais.";
+                    } else {
+                        UsuarioLivro registroEmprestimo = new UsuarioLivro();
 
-    public ResponseEntity<List<LivroPesquisaDTO>> pesquisarPorTituloEAutor(LivroDTO livroDTO) {
-        List<Livro> livros = livroRepository.findByAutorContainingIgnoreCaseAndTituloContainingIgnoreCaseAndExcluidoIsFalse(livroDTO.getAutor(), livroDTO.getTitulo());
-        List<LivroPesquisaDTO> livrosDTO = convertToDTO(livros);
-        isEmpty(livrosDTO);
+                        registroEmprestimo.setUsuario(usuario.get());
+                        registroEmprestimo.setLivro(livro.get());
+                        registroEmprestimo.setAtivo(true);
 
-        return new ResponseEntity<>(livrosDTO, HttpStatus.OK);
+                        usuarioLivroRepository.save(registroEmprestimo);
+                        mensagem = "Livro emprestado.";
+                    }
+                } else {
+                    mensagem = "Usuário ou Livro não existente.";
+                }
+            } else {
+                mensagem = "Livro já alugado pelo usuário.";
+            }
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     private List<LivroPesquisaDTO> isEmpty(List<LivroPesquisaDTO> livrosPesquisaDTO) {
