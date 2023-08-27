@@ -2,6 +2,7 @@ package com.vhl.library.controller;
 
 import com.vhl.library.model.DTO.LivroDTO;
 import com.vhl.library.model.DTO.LivroPesquisaDTO;
+import com.vhl.library.model.DTO.UsuarioLivroDTO;
 import com.vhl.library.services.LivroService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +34,9 @@ public class LivroController {
         return livroService.excluir(id);
     }
 
-    @GetMapping("/emprestar")
-    public String emprestar() {
-        return "";
+    @PostMapping("/emprestar")
+    public ResponseEntity<String> emprestar(@RequestBody UsuarioLivroDTO usuarioLivroDTO) {
+        return livroService.emprestar(usuarioLivroDTO);
     }
 
     @GetMapping("/devolver")
