@@ -39,9 +39,9 @@ public class LivroController {
         return livroService.emprestar(usuarioLivroDTO);
     }
 
-    @GetMapping("/devolver")
-    public String devolver() {
-        return "";
+    @PostMapping("/devolver")
+    public ResponseEntity<String> devolver(@RequestBody UsuarioLivroDTO usuarioLivroDTO) {
+        return livroService.devolver(usuarioLivroDTO);
     }
 
     @GetMapping("/pesquisarPorTitulo")
