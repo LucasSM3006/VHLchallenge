@@ -2,8 +2,8 @@ package com.vhl.library.model.DTO;
 
 public class LivroDTO {
     private Long id;
-    private String titulo;
-    private String autor;
+    private String titulo = " ";
+    private String autor = " ";
     private boolean excluido;
     private boolean emprestado;
 

@@ -2,7 +2,7 @@ package com.vhl.library.model.DTO;
 
 public class UsuarioDTO {
     private Long id;
-    private String nome;
+    private String nome = " ";
 
     public String getNome() {
         return nome;
