@@ -108,8 +108,29 @@ public class LivroService {
     }
 
     public ResponseEntity<String> excluir(int id) {
-        livroRepository.deleteById(id);
-        return new ResponseEntity<>("Ok.", HttpStatus.OK);
+        String mensagem;
+
+        Optional<Livro> livro = livroRepository.findByIdAndExcluidoFalse(id);
+
+        if(livro.isEmpty()) {
+            mensagem = "Livro não encontrado.";
+        } else {
+            Optional<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findByAtivoTrueAndLivroId(id);
+
+            if (usuarioLivros.isPresent()) {
+                mensagem = "Livro emprestado para um usuário, não pode ser excluído.";
+            } else {
+                Livro livroExistente = livro.get();
+
+                livroExistente.setExcluido(true);
+
+                livroRepository.save(livroExistente);
+
+                mensagem = "Livro excluído.";
+            }
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     public ResponseEntity<String> emprestar(UsuarioLivroDTO usuarioLivroDTO) {
