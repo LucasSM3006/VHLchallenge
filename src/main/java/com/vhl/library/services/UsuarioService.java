@@ -5,7 +5,6 @@ import com.vhl.library.model.Usuario;
 import com.vhl.library.model.UsuarioLivro;
 import com.vhl.library.repos.UsuarioLivroRepository;
 import com.vhl.library.repos.UsuarioRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -25,110 +24,99 @@ public class UsuarioService {
     }
 
     public ResponseEntity<String> adicionar(UsuarioDTO usuarioDTO) {
-        String mensagem;
-
-        usuarioDTO.setNome(usuarioDTO.getNome() == null ? " " : usuarioDTO.getNome());
-
         String nome = usuarioDTO.getNome().trim();
 
-        if (nome.isBlank() || !nome.matches("[a-zA-Z_ ]+")) {
-            mensagem = "Favor utilizar somente letras.";
-        } else {
-            Usuario novoUsuario = new Usuario();
-
-            novoUsuario.setNome(usuarioDTO.getNome());
-            novoUsuario.setExcluido(false);
-
-            usuarioRepository.save(novoUsuario);
-
-            mensagem = "Usuário salvo.";
+        if (!isNomeValido(nome)) {
+            return ResponseEntity.ok("Favor utilizar somente letras.");
         }
 
-        return new ResponseEntity<>(mensagem, HttpStatus.OK);
+        Usuario novoUsuario = createUsuarioWithNome(nome);
+        usuarioRepository.save(novoUsuario);
+
+        return ResponseEntity.ok("Usuário salvo.");
     }
 
     public ResponseEntity<String> editar(int id, UsuarioDTO usuarioDTO) {
-        String mensagem;
-
-        usuarioDTO.setNome(usuarioDTO.getNome() == null ? " " : usuarioDTO.getNome());
-
         String nome = usuarioDTO.getNome().trim();
 
-        if (nome.isBlank() || !nome.matches("[a-zA-Z_ ]+")) {
-            mensagem = "Favor utilizar somente letras.";
-            return new ResponseEntity<>(mensagem, HttpStatus.OK);
+        if (!isNomeValido(nome)) {
+            return ResponseEntity.ok("Favor utilizar somente letras.");
         }
 
         Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(id);
 
-        if(usuario.isPresent()) {
+        if (usuario.isPresent()) {
             Usuario usuarioExistente = usuario.get();
             String nomeAnterior = usuarioExistente.getNome();
 
-            usuarioExistente.setNome(usuarioDTO.getNome());
-
+            usuarioExistente.setNome(nome);
             usuarioRepository.save(usuarioExistente);
 
-            mensagem = "Usuário editado. Nome anterior: " + nomeAnterior + "; Novo nome: " + usuarioExistente.getNome();
-        } else {
-            mensagem = "Usuário não existente ou excluído.";
+            return ResponseEntity.ok("Usuário editado. Nome anterior: " + nomeAnterior + "; Novo nome: " + usuarioExistente.getNome());
         }
 
-        return new ResponseEntity<>(mensagem, HttpStatus.OK);
+        return ResponseEntity.ok("Usuário não existente ou excluído.");
     }
 
     public ResponseEntity<String> excluir(int id) {
-        String mensagem;
-
         Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(id);
 
-        if(usuario.isEmpty()) {
-            mensagem = "Usuário não encontrado.";
-        } else {
-            List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findByAtivoTrueAndUsuarioId(id);
-
-            if(usuarioLivros.isEmpty()) {
-                Usuario usuarioExistente = usuario.get();
-
-                usuarioExistente.setExcluido(true);
-
-                usuarioRepository.save(usuarioExistente);
-
-                mensagem = "Usuário excluído.";
-
-            } else {
-                mensagem = "Usuário tem livros pendentes. Devolver primeiro antes de excluir.";
-            }
+        if (usuario.isEmpty()) {
+            return ResponseEntity.ok("Usuário não encontrado.");
         }
 
-        return new ResponseEntity<>(mensagem, HttpStatus.OK);
+        List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findByAtivoTrueAndUsuarioId(id);
+
+        if (!usuarioLivros.isEmpty()) {
+            return ResponseEntity.ok("Usuário tem livros pendentes. Devolver primeiro antes de excluir.");
+        }
+
+        Usuario usuarioExistente = usuario.get();
+        usuarioExistente.setExcluido(true);
+        usuarioRepository.save(usuarioExistente);
+
+        return ResponseEntity.ok("Usuário excluído.");
     }
 
     public ResponseEntity<List<UsuarioDTO>> pesquisarPorNome(UsuarioDTO usuarioDTO) {
         List<Usuario> usuarios = usuarioRepository.findByNomeContainingIgnoreCaseAndExcluidoIsFalse(usuarioDTO.getNome());
         List<UsuarioDTO> usuariosDTO = convertToDTO(usuarios);
 
-        if(usuarios.isEmpty()) {
-            UsuarioDTO usuarioVazio = new UsuarioDTO();
-            usuarioVazio.setId(0L);
-            usuarioVazio.setNome("Sem resultados.");
-            usuariosDTO.add(usuarioVazio);
+        if (usuarios.isEmpty()) {
+            usuariosDTO.add(createEmptyUsuarioDTO());
         }
 
-        return new ResponseEntity<>(usuariosDTO, HttpStatus.OK);
+        return ResponseEntity.ok(usuariosDTO);
+    }
+
+    private boolean isNomeValido(String nome) {
+        return !nome.isBlank() && nome.matches("[a-zA-Z_ ]+");
+    }
+
+    private Usuario createUsuarioWithNome(String nome) {
+        Usuario novoUsuario = new Usuario();
+        novoUsuario.setNome(nome);
+        novoUsuario.setExcluido(false);
+        return novoUsuario;
+    }
+
+    private UsuarioDTO createEmptyUsuarioDTO() {
+        UsuarioDTO usuarioVazio = new UsuarioDTO();
+        usuarioVazio.setId(0L);
+        usuarioVazio.setNome("Sem resultados.");
+        return usuarioVazio;
     }
 
     private List<UsuarioDTO> convertToDTO(List<Usuario> usuarios) {
         List<UsuarioDTO> usuariosDTO = new ArrayList<>();
 
-        if(usuarios.isEmpty()) return usuariosDTO;
-
-        for(Usuario usuario : usuarios) {
-            UsuarioDTO usuarioDTO = new UsuarioDTO();
-            usuarioDTO.setId(usuario.getId());
-            usuarioDTO.setNome(usuario.getNome());
-
-            usuariosDTO.add(usuarioDTO);
+        if (!usuarios.isEmpty()) {
+            for (Usuario usuario : usuarios) {
+                UsuarioDTO usuarioDTO = new UsuarioDTO();
+                usuarioDTO.setId(usuario.getId());
+                usuarioDTO.setNome(usuario.getNome());
+                usuariosDTO.add(usuarioDTO);
+            }
         }
 
         return usuariosDTO;
