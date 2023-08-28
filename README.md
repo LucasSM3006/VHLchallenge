@@ -10,8 +10,6 @@ As tecnologias utilizadas para a parte de código foram:
 
 E o banco de dados utilizado é o MySQL 8.1.0.
 
-*Obs. São necessários o Java e o MySQL pora rodar, porém como o JPA foi utilizado, o PostGreSQL pode ser utilizado. É só mudar a dependência dentro do "pom.xml" do projeto, juntamente com as informações relevantes em "application.properties".*
-
 # O Projeto
 Este projeto contem uma API de gerenciamento para uma biblioteca.
 ## Objetivo:
@@ -23,7 +21,8 @@ O projeto tem como objetivo a criação de um CRUD para uma biblioteca.
 
 ## Instalação do projeto
 
-Faça um clone do projeto em um diretório, ou baixe ele com um zip e extraia, e é só rodar como se fosse uma aplicação Java, ou numa IDE (Intellij, por exemplo).
+É importante destacar que são necessários o Java e o MySQL pora inicializar o projeto, porém como o JPA foi utilizado, o PostGreSQL pode ser utilizado.<br /><br /> Obs. Será necessário mudar as dependências relevantes dentro do "pom.xml" do projeto, juntamente com as informações relevantes em "application.properties", **mas** mantenha em mente que não importando qual banco de dados utilizar, será necessário mudar dentro do "application.properties" o 'datasource.url', 'datasource.driver-class-name', 'datasource.username', e 'datasource.password'. <br /><br />
+Faça um clone do projeto em um diretório, ou baixe ele como um zip e extraia, e é só rodar como se fosse uma aplicação Java, ou numa IDE (Intellij, por exemplo).
 
 ## Banco de dados
 
