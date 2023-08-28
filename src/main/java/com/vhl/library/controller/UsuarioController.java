@@ -24,14 +24,12 @@ public class UsuarioController {
 
     @PutMapping("/editar/{id}")
     public ResponseEntity<String> editar(@PathVariable("id") int id, @RequestBody UsuarioDTO usuarioDTO) {
-
         return usuarioService.editar(id, usuarioDTO);
     }
 
-    @GetMapping("/excluir")
-    public String excluir() {
-        // return usuarioService.excluir(id);
-        return "";
+    @DeleteMapping("/excluir/{id}")
+    public ResponseEntity<String> excluir(@PathVariable("id") int id) {
+        return usuarioService.excluir(id);
     }
 
     @GetMapping("/pesquisarPorNome")
