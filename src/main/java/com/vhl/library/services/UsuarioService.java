@@ -2,6 +2,8 @@ package com.vhl.library.services;
 
 import com.vhl.library.model.DTO.UsuarioDTO;
 import com.vhl.library.model.Usuario;
+import com.vhl.library.model.UsuarioLivro;
+import com.vhl.library.repos.UsuarioLivroRepository;
 import com.vhl.library.repos.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,11 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioLivroRepository usuarioLivroRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioLivroRepository usuarioLivroRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.usuarioLivroRepository = usuarioLivroRepository;
     }
 
     public ResponseEntity<String> adicionar(UsuarioDTO usuarioDTO) {
@@ -73,8 +77,31 @@ public class UsuarioService {
         return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
-    public String excluir() {
-        return null;
+    public ResponseEntity<String> excluir(int id) {
+        String mensagem;
+
+        Optional<Usuario> usuario = usuarioRepository.findByIdAndExcluidoFalse(id);
+
+        if(usuario.isEmpty()) {
+            mensagem = "Usuário não encontrado.";
+        } else {
+            List<UsuarioLivro> usuarioLivros = usuarioLivroRepository.findByAtivoTrueAndUsuarioId(id);
+
+            if(usuarioLivros.isEmpty()) {
+                Usuario usuarioExistente = usuario.get();
+
+                usuarioExistente.setExcluido(true);
+
+                usuarioRepository.save(usuarioExistente);
+
+                mensagem = "Usuário excluído.";
+
+            } else {
+                mensagem = "Usuário tem livros pendentes. Devolver primeiro antes de excluir.";
+            }
+        }
+
+        return new ResponseEntity<>(mensagem, HttpStatus.OK);
     }
 
     public ResponseEntity<List<UsuarioDTO>> pesquisarPorNome(UsuarioDTO usuarioDTO) {
